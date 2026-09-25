@@ -1,7 +1,22 @@
 <?php
     session_start();
-    
+
     include 'conexion_be.php';
+    include 'verificar_captcha.php';
+
+    // =======================================================
+    // 0. VALIDACIÓN DEL CAPTCHA
+    // =======================================================
+    $captcha_token = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
+    if (!verificar_captcha($captcha_token)) {
+        echo '
+            <script>
+                alert("Por favor, confirma que no eres un robot.");
+                window.location = "../index.php";
+            </script>
+        ';
+        exit;
+    }
 
     // Obtenemos los valores y usamos trim() para descartar si solo escribieron espacios en blanco
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
@@ -67,6 +82,7 @@
         if ($login_valido) {
             $_SESSION['usuario'] = $email;
             $_SESSION['id_usuario'] = $usuario_datos['id']; 
+            $_SESSION['ultima_actividad'] = time();
             header("location: ./bienvenida.php");
             exit;
         } else {
